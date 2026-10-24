@@ -1,135 +1,120 @@
 import SwiftUI
 
 struct AboutScreen: View {
+    let snapshot: ContentSnapshot
     let onNavigate: (Destination) -> Void
 
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    private let content: [String: String]
-
-    init(onNavigate: @escaping (Destination) -> Void) {
-        self.onNavigate = onNavigate
-        self.content = AppDatabase.shared.content()
-    }
-
-    private func slot(_ key: String) -> String {
-        AppDatabase.shared.text(in: content, key: key)
-    }
-
-    private var isWide: Bool {
-        horizontalSizeClass == .regular
-    }
-
     var body: some View {
-        ScrollView {
-            VStack(spacing: 44) {
-                SectionHeading(
-                    title: slot("about.title"),
-                    eyebrow: slot("about.eyebrow")
-                )
+        GeometryReader { proxy in
+            let isWide = proxy.size.width >= 720
+            ScrollView {
+                VStack(spacing: 0) {
+                    SectionHeading(
+                        title: snapshot.text("about.title"),
+                        eyebrow: snapshot.text("about.eyebrow")
+                    )
 
-                ScriptTitle(text: slot("about.headline"), size: 34)
+                    ScriptTitle(text: snapshot.text("about.headline"), size: 34)
+                        .padding(.top, 36)
 
-                if isWide {
-                    HStack(alignment: .center, spacing: 36) {
-                        introColumn
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        portrait
-                            .frame(width: 360)
-                    }
-                } else {
                     VStack(spacing: 36) {
-                        introColumn
                         portrait
+                        intro
                     }
+                    .padding(.top, 44)
+
+                    sections
+                        .padding(.top, 56)
+
+                    HStack(spacing: 12) {
+                        PrimaryButton(label: snapshot.text("about.cta.gallery"), outline: true) {
+                            onNavigate(.gallery)
+                        }
+                        PrimaryButton(label: snapshot.text("about.cta.contact")) {
+                            onNavigate(.contact)
+                        }
+                    }
+                    .padding(.top, 48)
                 }
-
-                VStack(spacing: 36) {
-                    VStack(spacing: 14) {
-                        ScriptTitle(text: slot("about.experienceTitle"), size: 30)
-                        bodyParagraph(slot("about.experienceP1"))
-                        bodyParagraph(slot("about.experienceP2"))
-                    }
-
-                    VStack(spacing: 14) {
-                        ScriptTitle(text: slot("about.communityTitle"), size: 30)
-                        bodyParagraph(slot("about.communityP1"))
-                    }
-
-                    Text(slot("about.quote"))
-                        .font(AppFont.serifItalic(16))
-                        .foregroundStyle(Palette.primary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-                        .padding(.vertical, 26)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Palette.card.opacity(0.65))
-                        )
-                }
-
-                HStack(spacing: 12) {
-                    Button {
-                        onNavigate(.gallery)
-                    } label: {
-                        Text(slot("about.cta.gallery"))
-                            .font(AppFont.interMedium(15))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .overlay(Capsule().strokeBorder(Palette.primary, lineWidth: 1))
-                            .foregroundStyle(Palette.primary)
-                    }
-
-                    Button {
-                        onNavigate(.contact)
-                    } label: {
-                        Text(slot("about.cta.contact"))
-                            .font(AppFont.interMedium(15))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(Capsule().fill(Palette.primary))
-                            .foregroundStyle(Palette.primaryForeground)
-                    }
-                }
+                .frame(maxWidth: isWide ? 900 : 640)
+                .padding(.vertical, 64)
+                .padding(.horizontal, 20)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 860)
-            .padding(.vertical, 64)
-            .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
-        }
-        .background(Palette.blush)
-    }
-
-    private var introColumn: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(slot("about.intro"))
-                .font(AppFont.inter(15))
-                .lineSpacing(10)
-                .foregroundStyle(Palette.mutedForeground)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(slot("about.introItalic"))
-                .font(AppFont.serifItalic(16))
-                .lineSpacing(10)
-                .foregroundStyle(Palette.mutedForeground)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var portrait: some View {
-        LocalImage(src: "/assets/crazy/seema.png", contentMode: .fit)
-            .aspectRatio(1, contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(Palette.primaryForeground, lineWidth: 8)
-            )
+        AspectImage(
+            src: "/assets/crazy/Marwa.png",
+            aspect: 1,
+            contentMode: .fill,
+            contentDescription: snapshot.text("about.imageAlt")
+        )
+        .frame(maxWidth: 420)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Palette.card, lineWidth: 8)
+        )
     }
 
-    private func bodyParagraph(_ text: String) -> some View {
-        Text(text)
-            .font(AppFont.inter(15))
-            .lineSpacing(10)
-            .foregroundStyle(Palette.mutedForeground)
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
+    private var intro: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(snapshot.text("about.intro"))
+                .font(AppFont.inter(15))
+                .lineSpacing(12)
+                .foregroundStyle(Palette.mutedForeground)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(snapshot.text("about.introItalic"))
+                .font(AppFont.serifItalic(16))
+                .lineSpacing(12)
+                .foregroundStyle(Palette.mutedForeground)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: 680, alignment: .leading)
+    }
+
+    private var sections: some View {
+        VStack(spacing: 36) {
+            VStack(spacing: 14) {
+                ScriptTitle(text: snapshot.text("about.experienceTitle"), size: 30)
+                Text(snapshot.text("about.experienceP1"))
+                    .font(AppFont.inter(15))
+                    .lineSpacing(12)
+                    .foregroundStyle(Palette.mutedForeground)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(snapshot.text("about.experienceP2"))
+                    .font(AppFont.inter(15))
+                    .lineSpacing(12)
+                    .foregroundStyle(Palette.mutedForeground)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 14) {
+                ScriptTitle(text: snapshot.text("about.communityTitle"), size: 30)
+                Text(snapshot.text("about.communityP1"))
+                    .font(AppFont.inter(15))
+                    .lineSpacing(12)
+                    .foregroundStyle(Palette.mutedForeground)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Text(snapshot.text("about.quote"))
+                .font(AppFont.serifItalic(16))
+                .lineSpacing(12)
+                .foregroundStyle(Palette.primary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 26)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.65))
+                )
+        }
     }
 }
