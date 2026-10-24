@@ -118,6 +118,20 @@ like the React Native app.
 > Security note: a key stored in `AppConfig.plist` is embedded in the app bundle and can be
 > extracted, just like `EXPO_PUBLIC_GEMINI_API_KEY`. Use a restricted key and rotate it if it leaks.
 
+## App icon
+
+The icon is the Sprinkles avatar on a blush tile (the Expo/React Native placeholder icon is gone).
+It is rendered from the same geometry as `AssistantAvatar.swift`, so it stays in step with the
+in-app avatar:
+
+```powershell
+python scripts/render-app-icon.py
+```
+
+The script writes `CrazyCakes/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png`
+(1024x1024, opaque RGB). Xcode caches icons aggressively, so after changing it run
+*Product -> Clean Build Folder* and delete the app from the simulator before rebuilding.
+
 ## Assistant ("Sprinkles")
 
 The floating avatar appears after the splash and flies in from the centre of the screen. The chat
@@ -149,9 +163,10 @@ CrazyCakes/
     crazy-cakes.db             mobile content database (synced)
     Images/ Videos/            bundled media pack (synced, 66 images + 2 videos)
     Fonts/                     Dancing Script, Crimson Text, Inter
-    Assets.xcassets/           app icon
+    Assets.xcassets/           app icon (Sprinkles)
     AppConfig.plist            content URL and Gemini configuration
 scripts/sync-content.mjs       re-sync database, media and media registry from CrazyCakesMobile
+scripts/render-app-icon.py     re-render the Sprinkles app icon
 scripts/MediaRegistry.template.swift
 ```
 
