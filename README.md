@@ -58,7 +58,9 @@ Behaviour that matches one-for-one:
   spinner; six screens in a bottom tab bar with 10 pt labels; iPad gets the 240 pt sidebar at width
   ≥ 720; the translucent logo watermark sits behind every screen.
 - **Home** — 6.5 s hero autoplay with paging and the same responsive height formula, copy below the
-  hero, four teaser cards, CTA and the dark brand footer with social pills from the database.
+  hero, four teaser cards, CTA and the dark brand footer with social pills from the database. The
+  hero title keeps both sparkle glyphs on one line and auto-shrinks to the available width, so it
+  never wraps on any iPhone or iPad in portrait, landscape or split view.
 - **About / Pricing / Reviews** — every string is a database content slot (`about.*`, `pricing.*`,
   `reviews.*`); testimonial cards, star ratings and the Google reviews link behave the same.
 - **Gallery** — 6 items per page, category chips, seeded FNV-1a + mulberry32 shuffle so "All" is
@@ -113,24 +115,29 @@ like the React Native app.
 | `GeminiAPIBaseURL` | `EXPO_PUBLIC_GEMINI_API_BASE_URL` | `https://generativelanguage.googleapis.com` |
 
 `NSMicrophoneUsageDescription` is set in the target build settings with the same sentence as
-`app.json`, and the app is portrait-only with a light interface style, matching `app.json`.
+`app.json`. The target supports portrait and both landscape orientations on iPhone, and all four
+orientations on iPad, with a light interface style. The hero title fit is width-based, so it also
+holds in split view and Stage Manager windows.
 
 > Security note: a key stored in `AppConfig.plist` is embedded in the app bundle and can be
 > extracted, just like `EXPO_PUBLIC_GEMINI_API_KEY`. Use a restricted key and rotate it if it leaks.
 
 ## App icon
 
-The icon is the Sprinkles avatar on a blush tile (the Expo/React Native placeholder icon is gone).
-It is rendered from the same geometry as `AssistantAvatar.swift`, so it stays in step with the
-in-app avatar:
+The icon is the Sprinkles assistant avatar on a blush tile (the Expo/React Native placeholder icon
+is gone). It is rendered from the same geometry as `AssistantAvatar.swift`, so it stays in step with
+the in-app avatar:
 
 ```powershell
 python scripts/render-app-icon.py
 ```
 
-The script writes `CrazyCakes/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png`
-(1024x1024, opaque RGB). Xcode caches icons aggressively, so after changing it run
-*Product -> Clean Build Folder* and delete the app from the simulator before rebuilding.
+The script writes the 1024x1024 opaque RGB master plus every legacy iPhone/iPad slot
+(`Icon-20@2x.png` through `Icon-83.5@2x~ipad.png`) and the matching `Contents.json`. The target
+builds with `ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES`, so every size SpringBoard
+can ask for is compiled into `Assets.car`. Xcode and the simulator cache icons aggressively, so
+after changing it run *Product -> Clean Build Folder*, delete the app from the simulator, and
+restart the simulator (or SpringBoard) before reinstalling.
 
 ## Assistant ("Sprinkles")
 

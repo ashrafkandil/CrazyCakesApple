@@ -77,10 +77,17 @@ struct HomeScreen: View {
 
     private func heroCopy(isWide: Bool) -> some View {
         VStack(spacing: 8) {
+            // The title includes the two sparkle glyphs and must stay on one line at
+            // every width (portrait, landscape, split view, iPhone and iPad). The
+            // font starts at the design size and shrinks only as far as needed.
             Text(snapshot.text("home.hero.title"))
                 .font(AppFont.script(isWide ? 52 : 38))
                 .foregroundStyle(Palette.primary)
                 .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.2)
+                .allowsTightening(true)
+                .frame(maxWidth: .infinity)
                 .fixedSize(horizontal: false, vertical: true)
 
             Eyebrow(text: snapshot.text("home.hero.tagline"))

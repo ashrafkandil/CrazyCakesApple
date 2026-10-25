@@ -1,0 +1,14 @@
+# Xcode / build output
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.pyc
