@@ -3,14 +3,15 @@
 
 The avatar is drawn in the app with SwiftUI shapes (CrazyCakes/Assistant/
 AssistantAvatar.swift, ported from src/assistant/AvatarFace.tsx), so this script
-replays the same geometry to produce CrazyCakes/Resources/Assets.xcassets/
-AppIcon.appiconset/AppIcon-1024.png.
+replays the same geometry to produce the 1024 master plus every legacy app-icon
+slot in CrazyCakes/Resources/Assets.xcassets/AppIcon.appiconset/.
 
 Run from the repo root with Pillow installed:
 
     python scripts/render-app-icon.py
 """
 
+import json
 import math
 import os
 
@@ -40,6 +41,30 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUTPUT = os.path.join(
     HERE, "..", "CrazyCakes", "Resources", "Assets.xcassets", "AppIcon.appiconset", "AppIcon-1024.png"
 )
+OUTPUT_DIR = os.path.dirname(OUTPUT)
+
+# Every slot SpringBoard asks for. The 1024 master alone is enough for a modern
+# build, but shipping the legacy sizes keeps the home-screen icon available on
+# every iOS version the deployment target supports.
+LEGACY_ICONS = [
+    ("Icon-20@2x.png", "iphone", "2x", "20x20", 40),
+    ("Icon-20@3x.png", "iphone", "3x", "20x20", 60),
+    ("Icon-29@2x.png", "iphone", "2x", "29x29", 58),
+    ("Icon-29@3x.png", "iphone", "3x", "29x29", 87),
+    ("Icon-40@2x.png", "iphone", "2x", "40x40", 80),
+    ("Icon-40@3x.png", "iphone", "3x", "40x40", 120),
+    ("Icon-60@2x.png", "iphone", "2x", "60x60", 120),
+    ("Icon-60@3x.png", "iphone", "3x", "60x60", 180),
+    ("Icon-20~ipad.png", "ipad", "1x", "20x20", 20),
+    ("Icon-20@2x~ipad.png", "ipad", "2x", "20x20", 40),
+    ("Icon-29~ipad.png", "ipad", "1x", "29x29", 29),
+    ("Icon-29@2x~ipad.png", "ipad", "2x", "29x29", 58),
+    ("Icon-40~ipad.png", "ipad", "1x", "40x40", 40),
+    ("Icon-40@2x~ipad.png", "ipad", "2x", "40x40", 80),
+    ("Icon-76~ipad.png", "ipad", "1x", "76x76", 76),
+    ("Icon-76@2x~ipad.png", "ipad", "2x", "76x76", 152),
+    ("Icon-83.5@2x~ipad.png", "ipad", "2x", "83.5x83.5", 167),
+]
 
 
 def px(x, y):
@@ -211,6 +236,30 @@ def main():
     icon = icon.convert("RGB")
     icon.save(OUTPUT, "PNG", optimize=True)
     print("wrote", os.path.relpath(OUTPUT), icon.size, icon.mode, os.path.getsize(OUTPUT), "bytes")
+
+    images = []
+    for filename, idiom, scale, size, pixels in LEGACY_ICONS:
+        path = os.path.join(OUTPUT_DIR, filename)
+        icon.resize((pixels, pixels), Image.LANCZOS).save(path, "PNG", optimize=True)
+        images.append({
+            "filename": filename,
+            "idiom": idiom,
+            "scale": scale,
+            "size": size,
+        })
+        print("wrote", os.path.relpath(path), f"{pixels}x{pixels}")
+
+    images.append({
+        "filename": os.path.basename(OUTPUT),
+        "idiom": "ios-marketing",
+        "scale": "1x",
+        "size": "1024x1024",
+    })
+    contents_path = os.path.join(OUTPUT_DIR, "Contents.json")
+    with open(contents_path, "w", encoding="utf-8") as handle:
+        json.dump({"images": images, "info": {"author": "xcode", "version": 1}}, handle, indent=2)
+        handle.write("\n")
+    print("wrote", os.path.relpath(contents_path))
 
 
 if __name__ == "__main__":
