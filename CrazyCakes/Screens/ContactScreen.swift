@@ -143,6 +143,19 @@ struct ContactScreen: View {
                 if success {
                     draft.clear()
                     submitted = true
+                    // Also send SMS notification to admin if enabled
+                    Task {
+                        let result = await ApiClient.shared.sendSmsNotification(
+                            name: self.trimmedName,
+                            eventType: self.eventType,
+                            eventDate: self.eventDate
+                        )
+                        if result.isSuccess {
+                            print("SMS notification sent successfully")
+                        } else {
+                            print("SMS notification failed: \(result.errorMessage ?? "Unknown error")")
+                        }
+                    }
                 } else {
                     sendError = "We could not open your email app. Email \(supportEmail) or call \(snapshot.text("contact.phone")) to send your request."
                 }

@@ -481,6 +481,18 @@ final class AppDatabase {
             )
         }
 
+        // Load email notifications setting
+        let emailRows = query(
+            handle,
+            sql: "SELECT value FROM content WHERE key = 'settings.email_notifications' LIMIT 1",
+            params: []
+        ) { statement in
+            text(statement, 0)
+        }
+        if let emailValue = emailRows.first {
+            snapshot.emailNotificationsEnabled = (emailValue == "1")
+        }
+
         return snapshot
     }
 }
