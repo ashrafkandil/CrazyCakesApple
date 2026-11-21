@@ -57,6 +57,7 @@ struct ContentSnapshot {
     var eventTypes: [String] = []
     var socialLinks: [SocialLink] = []
     var version: String = "bundled"
+    var emailNotificationsEnabled: Bool = true
 
     static let empty = ContentSnapshot()
 
